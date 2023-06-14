@@ -6,50 +6,50 @@
 /*   By: matsanto <matsanto@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/11 18:47:19 by matsanto          #+#    #+#             */
-/*   Updated: 2023/06/11 18:59:17 by matsanto         ###   ########.fr       */
+/*   Updated: 2023/06/14 16:53:03 by matsanto         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
 
 #include "get_next_line.h"
 
 size_t	ft_strlen(const char *s)
 /**
-  * Retorna o comprimento de uma string válida
+ * Retorna o tamanho de uma string válida
 */
 {
-	int	qtd_caracteres;
+	unsigned long int	length;
 
-	qtd_caracteres = 0;
-	while (*s)
+	if (s == NULL)
+		return (0);
+	length = 0;
+	while (s[length])
 	{
-		qtd_caracteres++;
-		s++;
+		length++;
 	}
-	return (qtd_caracteres);
+	return (length);
 }
 
-char	*ft_strdup(const char *s)
+char	*ft_strdup(const char *str)
 /**
-  * duplica uma string em outra. aloca memória usando malloc.
+ * Duplica uma string em outra. aloca memória usando malloc.
 */
 {
-	unsigned int	strlength;
-	char			*newstr;
-	unsigned int	i;
+	char			*new_str;
+	unsigned int	lenght;
+	unsigned int	index;
 
-	strlength = ft_strlen(s);
-	newstr = malloc((strlength + 1) * sizeof(const char));
-	if (newstr == NULL)
+	lenght = ft_strlen(str);
+	new_str = malloc((lenght + 1) * sizeof(const char));
+	if (new_str == NULL)
 		return (NULL);
-	newstr[strlength] = '\0';
-	i = 0;
-	while (i < strlength)
+	new_str[lenght] = '\0';
+	index = 0;
+	while (index < lenght)
 	{
-		((char *) newstr)[i] = ((char *) s)[i];
-		i++;
+		((char *) new_str)[index] = ((char *) str)[index];
+		index++;
 	}
-	return (newstr);
+	return (new_str);
 }
 
 char	*ft_strjoin(char const *s1, char const *s2)
@@ -58,64 +58,70 @@ char	*ft_strjoin(char const *s1, char const *s2)
   * aloca memória usando malloc.
 */
 {
-	char	*joint;
-	int		i;
-	int		length_s1;
-	int		length_s2;
+	char	*new_str;
+	size_t	count;
+	size_t	lenght_s1;
+	size_t	lenght_s2;
 
-	length_s1 = ft_strlen(s1);
-	length_s2 = ft_strlen(s2);
-	joint = malloc((length_s1 + length_s2 + 1) * sizeof(char));
-	if (joint == NULL)
+	lenght_s1 = ft_strlen(s1);
+	lenght_s2 = ft_strlen(s2);
+	new_str = (char *)malloc((lenght_s1 + lenght_s2 + 1) * sizeof(char));
+	if (new_str == NULL)
 		return (NULL);
-	i = -1;
-	while (s1[++i])
-		joint[i] = s1[i];
-	i = -1;
-	while (s2[++i])
-		joint[i + length_s1] = s2[i];
-	joint[length_s1 + length_s2] = '\0';
+	count = 0;
+	while (s1[count] != '\0')
+	{
+		new_str[count] = s1[count];
+		count++;
+	}
+	count = 0;
+	while (s2[count] != '\0')
+	{
+		new_str[count + lenght_s1] = s2[count];
+		count++;
+	}
+	new_str[lenght_s1 + lenght_s2] = '\0';
 	free((char *)s1);
-	return (joint);
+	return (new_str);
 }
 
-size_t	ft_strlcpy(char *dst, const char *src, size_t size)
+size_t	ft_strlcpy(char *dest, const char *src, size_t size)
 /**
   * copia (até tamanho bytes) o conteúdo de uma string (src) em outra (dst).
   * substitui o conteúdo de dst.
 */
 {
-	unsigned int	i;
+	size_t	count;
 
 	if (size == 0)
 		return (ft_strlen(src));
-	i = 0;
-	while (src[i] && i < (size - 1))
+	count = 0;
+	while (count < (size - 1) && src[count] != '\0')
 	{
-		dst[i] = src[i];
-		i++;
+		dest[count] = src[count];
+		count++;
 	}
-	dst[i] = '\0';
+	dest[count] = '\0';
 	return (ft_strlen(src));
 }
 
-int	contains_nl(char *string)
+int	line_break_position(char *string)
 /**
-  * verifica uma string em busca de um caractere de linha única (\n).
-  * se encontrado, retorna sua posição (>= 0).
-  * caso contrário, retorna -1.
+   * verifica uma string em busca de um caractere de linha única (\n).
+   * se encontrado, retorna sua posição (>= 0).
+   * caso contrário, retorna -1.
 */
 {
-	int	i;
+	int	index;
 
 	if (!string)
 		return (-1);
-	i = 0;
-	while (string[i])
+	index = 0;
+	while (string[index])
 	{
-		if (string[i] == '\n')
-			return (i);
-		i++;
+		if (string[index] == '\n')
+			return (index);
+		index++;
 	}
 	return (-1);
 }
