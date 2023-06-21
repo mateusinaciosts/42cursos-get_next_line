@@ -6,7 +6,7 @@
 /*   By: matsanto <matsanto@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 17:47:14 by matsanto          #+#    #+#             */
-/*   Updated: 2023/06/14 17:00:41 by matsanto         ###   ########.fr       */
+/*   Updated: 2023/06/17 18:26:02 by matsanto         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,10 @@ int	main(void)
 	int		fd;
 	char	*gnl;
 
-	fd = open("file_test.txt", O_RDONLY);
+	fd = open("exemplo.txt", O_RDONLY);
 	gnl = get_next_line(fd);
 	printf("%s", gnl);
+	printf("2 tentativa:\n");
 	gnl = get_next_line(fd);
 	printf("%s", gnl);
 	close(fd);

@@ -6,143 +6,140 @@
 /*   By: matsanto <matsanto@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 17:47:07 by matsanto          #+#    #+#             */
-/*   Updated: 2023/06/14 16:14:19 by matsanto         ###   ########.fr       */
+/*   Updated: 2023/06/14 17:37:01 by matsanto         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-
-static void	*free_n_null(char **s1, char **s2, char **s3);
-static char	*copy_up_to_nl(char *string);
-static char	*save_past_first_nl(char *source);
-static char	*return_line(char **rest, char **buffer, char **line, int i);
+static void	*free_variable_memories(char **mem_line, char **mem_rest,
+				char **mem_buffer);
+static char	*take_single_line(char **rest_content, char **buffer, char **line,
+				int buffer_read);
+static char	*content_after_line(char *content);
+static char	*content_before_line(char *content);
 
 char	*get_next_line(int fd)
 /**
- * Esta função lê a partir de um descritor de ficheiro e devolve uma linha lida
- * por chamada, definida doravante como uma string que termina em \n, a menos que EOF
- * seja alcançado e nenhum \n esteja presente, caso em que tudo o que foi lido
- * é devolvido de uma só vez.
+  * Lê de um descritor de arquivo e retorna uma linha lida por chamada,
+  * incluindo \n, a menos que EOF (encontre o fim do arquivo)
+  * e nenhum \n está presente, 
+  * nesse caso tudo o que foi lido é retornado imediatamente.
 */
 {
-	static char	*rest;
-	char		*buffer;
+	static char	*rest_content;
 	char		*line;
-	int			chars_read;
+	char		*buffer;
+	int			buffer_read;
 
-	// inicializar variáveis
-	if (!rest)
-		rest = ft_strdup("");
-	line = ft_strdup(rest);
+	if (!rest_content)
+		rest_content = ft_strdup("");
+	line = ft_strdup(rest_content);
 	buffer = malloc((BUFFER_SIZE + 1) * sizeof(char));
 	if (buffer == NULL)
 		return (NULL);
-	chars_read = BUFFER_SIZE;
-
-	// loop usando read() enquanto não for encontrado \n
-	while (chars_read == BUFFER_SIZE && !(contains_nl(line) >= 0))
+	buffer_read = BUFFER_SIZE;
+	while (buffer_read == BUFFER_SIZE && (contains_break_position(line) < 0))
 	{
-		chars_read = read(fd, buffer, BUFFER_SIZE);
-		
-		// terminar a execução se a leitura do ficheiro correr mal
-		if (chars_read < 0) 
-			return (free_n_null(&line, &rest, &buffer));
-		buffer[chars_read] = '\0';
-
-		// concatena a memória intermédia lida com a linha que está a ser construída
+		buffer_read = read(fd, buffer, BUFFER_SIZE);
+		if (buffer_read < 0)
+			return (free_variable_memories(&line, &rest_content, &buffer));
+		buffer[buffer_read] = '\0';
 		line = ft_strjoin(line, buffer);
 	}
-	return (return_line(&rest, &buffer, &line, chars_read));
+	return (take_single_line(&rest_content, &buffer, &line, buffer_read));
 }
 
-static void	*free_n_null(char **s1, char **s2, char **s3)
+static void	*free_variable_memories(char **mem_line, char **mem_rest,
+	char **mem_buffer)
 /**
- * Liberta a memória atribuída e define os apontadores como NULL
+ * Libera as memórias alocadas, limpando as memórias usadas em trabalhos nas outras funções
 */
 {
-	if (s1)
+	if (mem_line)
 	{
-		if (*s1)
-			free(*s1);
-		*s1 = NULL;
+		if (*mem_line)
+			free(*mem_line);
+		*mem_line = NULL;
 	}
-	if (s2)
+	if (mem_rest)
 	{
-		if (*s2)
-			free(*s2);
-		*s2 = NULL;
+		if (*mem_rest)
+			free(*mem_rest);
+		*mem_rest = NULL;
 	}
-	if (s3)
+	if (mem_buffer)
 	{
-		if (*s3)
-			free(*s3);
-		*s3 = NULL;
+		if (*mem_buffer)
+			free(*mem_buffer);
+		*mem_buffer = NULL;
 	}
 	return (NULL);
 }
 
-static char	*copy_up_to_nl(char *string)
+static char	*take_single_line(char **rest_content, char **buffer,
+	char **line, int buffer_read)
 /**
- * amarra a linha até o primeiro \n encontrado na string.
+ * Ultima parte da função get_next_line. Libera as memórias se necessário,
+ * em seguida, vincula a linha de leitura atual que vai ser retornada,
+ * e armazena o que sobrou do buffer na variável estática `rest_content`
+ * para ter o início da próxima linha salvo para a próxima chamada de função.
 */
 {
-	char	*copy;
-	int		nl_pos;
-
-	nl_pos = contains_nl(string);
-	if (!string)
-		return (NULL);
-	if (!(nl_pos >= 0))
-		return (string);
-	copy = malloc((nl_pos + 2) * sizeof(char));
-	if (copy == NULL)
-		return (NULL);
-	copy[nl_pos + 1] = '\0';
-	ft_strlcpy(copy, string, nl_pos + 2);
-	free(string);
-	return (copy);
-}
-
-static char	*save_past_first_nl(char *source)
-/**
- * Todo o resto dentro do buffer após o primeiro \n encontrado
- * é guardado na variável estática `rest`. Isto garante
- * que o início da próxima linha não seja perdido entre
- * chamadas de função.
-*/
-{
-	char	*dest;
-	int		nl_pos;
-	int		strlen;
-
-	nl_pos = contains_nl(source);
-	if (!(nl_pos >= 0))
-		return (NULL);
-	dest = malloc(((strlen = ft_strlen(source)) - nl_pos) * sizeof(char));
-	if (dest == NULL)
-		return (NULL);
-	dest[strlen - nl_pos - 1] = '\0';
-	ft_strlcpy(dest, source + nl_pos + 1, strlen - nl_pos);
-	return (dest);
-}
-
-static char	*return_line(char **rest, char **buffer, char **line, int i)
-/**
- * Finaliza a execução de get_next_line. Libera memória se necessário,
- * então amarra a linha de leitura atual para ser retornada,
- * e armazena o que sobrou do buffer na variável estática `rest`
- * para que o início da próxima linha seja guardado para a próxima chamada da função.
-*/
-{
-	if (i == 0)
+	if (buffer_read == 0)
 	{
-		free_n_null(rest, buffer, NULL);
+		free_variable_memories(NULL, rest_content, buffer);
 		if (*line && **line)
 			return (*line);
-		return (free_n_null(line, NULL, NULL));
+		return (free_variable_memories(line, NULL, NULL));
 	}
-	free_n_null(rest, buffer, NULL);
-	*rest = save_past_first_nl(*line);
-	*line = copy_up_to_nl(*line);
+	free_variable_memories(NULL, rest_content, buffer);
+	*rest_content = content_after_line(*line);
+	*line = content_before_line(*line);
 	return (*line);
+}
+
+static char	*content_after_line(char *content)
+/**
+  * Todo o resto dentro do buffer após o primeiro \n encontrado
+  * é salvo na variável estática `rest`. 
+  * Isso garante que o início da próxima linha não se perca entre
+  * chamadas de função.
+*/
+{
+	int		position;
+	int		size;
+	char	*content_after;
+
+	position = contains_break_position(content);
+	if (position < 0)
+		return (NULL);
+	size = ft_strlen(content);
+	content_after = malloc((size - position) * sizeof(char));
+	if (content_after == NULL)
+		return (NULL);
+	content_after[size - position - 1] = '\0';
+	ft_strlcpy(content_after, content + position + 1, size - position);
+	return (content_after);
+}
+
+static char	*content_before_line(char *content)
+/**
+ * recorta apenas o início do conteúdo, antes do primeiro \n
+*/
+{
+	int		position;
+	char	*content_before;
+
+	position = contains_break_position(content);
+	if (!content)
+		return (NULL);
+	if (position < 0)
+		return (content);
+	content_before = malloc((position + 2) * sizeof(char));
+	if (content_before == NULL)
+		return (NULL);
+	content_before[position + 1] = '\0';
+	ft_strlcpy(content_before, content, position + 2);
+	free(content);
+	return (content_before);
 }

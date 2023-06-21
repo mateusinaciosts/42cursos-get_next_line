@@ -6,7 +6,7 @@
 /*   By: matsanto <matsanto@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/11 18:47:19 by matsanto          #+#    #+#             */
-/*   Updated: 2023/06/14 16:53:03 by matsanto         ###   ########.fr       */
+/*   Updated: 2023/06/14 17:37:16 by matsanto         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,8 +104,7 @@ size_t	ft_strlcpy(char *dest, const char *src, size_t size)
 	dest[count] = '\0';
 	return (ft_strlen(src));
 }
-
-int	line_break_position(char *string)
+int	contains_break_position(char *string)
 /**
    * verifica uma string em busca de um caractere de linha única (\n).
    * se encontrado, retorna sua posição (>= 0).
